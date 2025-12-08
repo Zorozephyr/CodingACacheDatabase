@@ -165,3 +165,96 @@ Unions must be accessed through specific members (.n for Node, .l for Leaf), not
 
 ### Printf Format Specifiers:
 `%p` expects a pointer (address). Use `&variable` to get the address of a variable. To print union data, access specific members like `root.n.path`.
+
+---
+
+## 🌐 Networking Fundamentals
+
+### Server Port vs Client Port:
+**Server port** = You choose (e.g., 12049), fixed, must be available, clients connect TO it.
+**Client port** = OS assigns automatically (ephemeral, e.g., 54321), temporary per connection.
+
+### socket() - Create a Socket:
+```c
+int socket(int domain, int type, int protocol);
+// Example: s = socket(AF_INET, SOCK_STREAM, 0);
+```
+| Arg | Meaning | Common Values |
+|-----|---------|---------------|
+| domain | Protocol family | `AF_INET` (IPv4) |
+| type | Communication type | `SOCK_STREAM` (TCP) |
+| protocol | Specific protocol | `0` (default) |
+
+**Returns:** Socket file descriptor (positive int) on success, `-1` on error. **Nothing mutated.**
+
+### bind() - Reserve a Port:
+```c
+int bind(int sockfd, struct sockaddr *addr, socklen_t addrlen);
+// Example: bind(s, (struct sockaddr *)&sock, sizeof(sock));
+```
+| Arg | Meaning | Mutated? |
+|-----|---------|----------|
+| sockfd | Socket from socket() | No |
+| addr | Address struct with IP/port | No (read only) |
+| addrlen | Size of addr struct | No |
+
+**Returns:** `0` on success, `-1` on error. **Nothing mutated** - just associates socket with address.
+
+### listen() - Start Accepting Connections:
+```c
+int listen(int sockfd, int backlog);
+// Example: listen(s, 10);
+```
+| Arg | Meaning | Mutated? |
+|-----|---------|----------|
+| sockfd | Bound socket | No |
+| backlog | Max pending connections queue | No |
+
+**Returns:** `0` on success, `-1` on error. **Nothing mutated** - marks socket as passive (listening).
+
+### accept() - Accept a Client Connection:
+```c
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+// Example: client = accept(s, (struct sockaddr *)&client_addr, &len);
+```
+| Arg | Meaning | Mutated? |
+|-----|---------|----------|
+| sockfd | Listening socket | No |
+| addr | Struct to store client's address | **YES! Filled with client IP/port** |
+| addrlen | Pointer to size | **YES! Updated with actual size** |
+
+**Returns:** NEW socket fd for this client (positive int), `-1` on error.
+**IMPORTANT:** `addr` and `addrlen` are **OUTPUT parameters** - function fills them with client info!
+
+### Server Flow Summary:
+```
+socket() → bind() → listen() → accept() → read/write → close()
+   ↓         ↓          ↓           ↓
+ Create   Reserve    Start     Wait for    Handle
+ socket    port     listening   client     client
+```
+
+### Byte Order Conversion Functions:
+Network uses big-endian, your PC (Intel) uses little-endian. Must convert!
+
+| Function | Direction | For | Use When |
+|----------|-----------|-----|----------|
+| `htons(port)` | Host → Network | 16-bit (ports) | Setting `sin_port` |
+| `ntohs(port)` | Network → Host | 16-bit (ports) | Reading client port |
+| `htonl(addr)` | Host → Network | 32-bit (IPs) | Setting `sin_addr` |
+| `ntohl(addr)` | Network → Host | 32-bit (IPs) | Reading IP as number |
+
+### IP Address Conversion Functions:
+| Function | Converts | Example |
+|----------|----------|---------|
+| `inet_addr("127.0.0.1")` | String → Binary | For setting up socket |
+| `inet_ntoa(addr.sin_addr)` | Binary → String | For printing IP address |
+
+**Memory trick:** h=host, n=network, s=short(16-bit), l=long(32-bit), a=ascii, ntoa=number-to-ascii
+
+---
+
+## 🔍 Debugging Tools
+
+### strace -f (System Call Tracer):
+Traces all system calls your program makes. Use `strace -f ./program` to see what your code is actually doing at the OS level. `-f` flag follows child processes. Helps debug segfaults, file issues, and socket problems by showing exactly which system call failed.
