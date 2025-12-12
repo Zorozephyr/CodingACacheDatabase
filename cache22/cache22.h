@@ -2,6 +2,8 @@
 #define CACHE22
 #define _GNU_SOURCE
 
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#pragma GCC diagnostic push
 
 
 #include <stdio.h>
@@ -27,6 +29,11 @@ typedef unsigned int int32;
 typedef unsigned int int16;
 typedef unsigned char int8;
 
+
+
+typedef struct s_cmdhandler CmdHandler;
+
+
 struct s_client {
     int s; //socket file descriptor for the client
     char ip[16]; //ip address of the client
@@ -34,6 +41,13 @@ struct s_client {
 };
 
 typedef struct s_client Client;
+
+typedef int32 (*Callback)(Client*,int8*, int8*);
+
+struct s_cmdhandler{
+    int8* cmd;
+    Callback handler;
+};
 
 void mainloop(int);
 int initServer(int16);

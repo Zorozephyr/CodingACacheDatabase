@@ -1,4 +1,6 @@
 /*tree.h*/
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#pragma GCC diagnostic push
 #define _GNU_SOURCE
 
 #include <stdio.h>
@@ -18,6 +20,13 @@
     errno = (x); \
     return null_ptr;
 #define NoError 0
+
+#define Print(x) \
+        zero(buf,256); \
+        strncpy((char *)buf, (x),255); \
+        size = (int16)strlen((char *)buf); \
+        if(size!=0) \
+            write(fd, (char *)buf,size)
 
 typedef void* Nullptr;
 Nullptr null_ptr = 0;
@@ -57,3 +66,11 @@ typedef union u_tree Tree;
 /*
 north will point to itself if it is the root node.
 */
+
+int8 *indent(int16);
+void zero(int8*, int16);
+Node *create_node(Node *, int8 *);
+Leaf *find_last_linear(Node *);
+Leaf *create_leaf(Node *, int8*, int8*, int16);
+void print_tree(int, Tree *);
+int main(void);

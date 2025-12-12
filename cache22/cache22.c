@@ -1,7 +1,34 @@
 #include "cache22.h"
 
+int32 handle_hello(Client *, int8*, int8*);
 bool scontinuation;
 bool ccontinuation;
+
+
+CmdHandler handlers[] = {
+    {(int8 *)"hello", handle_hello}
+};
+
+int32 handle_hello(Client *cli,int8* folder, int8 *args){
+    dprintf(cli->s,"hello '%s'\n",folder);
+    return 0;
+}
+
+Callback getcmd(int8 *cmd){
+    Callback cb;
+    int16 n,arrlen;
+
+    arrlen = sizeof(handlers)/handlers[0];
+    cb=0;
+    for(n=0;n<arrlen;n++){
+        if(!strcmp((char *)cmd,(char*)handlers[n].cmd)){
+            cb = handlers[n].handler;
+        }
+    }
+
+    return cb;
+
+}
 
 void zero(int8* buf, int16 size){
     int8 *p;
@@ -12,8 +39,64 @@ void zero(int8* buf, int16 size){
     return;
 }
 
-void childloop(Client *client){
-    sleep(1);
+void childloop(Client *cli){
+    int8 buf[256];
+    int16 n;
+    int8 *p,*f;
+    int8 cmd[256], folder[256], args[256];
+    zero(cmd,256);
+    zero(folder,256);
+    zero(args,256);
+
+    zero(buf,256);
+    ssize_t bytes_read = read(cli->s, (char *) buf, 255);
+    if (bytes_read <= 0) {
+        return; 
+    }
+    n = (int16)strlen((char *)buf);
+
+    if(n>254){
+        n=254;
+    }
+
+    for(p=buf;(*p) && (n--) && (*p != ' ') && (*p!='\n')&& (*p!='\r');p++);
+    if(!(*p)){
+        strncpy((char *)cmd, (char *)buf,255);
+    }
+    else if((*p == '\n') || (*p=='\r')){
+        *p=0;
+        strncpy((char *)cmd, (char *)buf,255);
+        goto done;
+    }
+    else if((*p==' ')){
+        *p=0;
+        strncpy((char *)cmd, (char *)buf,255);
+    }
+
+    for(p++,f=p;(*p) && (n--) && (*p != ' ') && (*p!='\n')&& (*p!='\r');p++){
+
+    }
+    if(!(*p) || (!n)){
+        strncpy((char *)folder, (char *)f,255);
+        goto done;
+    }
+    else if((*p==' ') || (*p == '\n') || (*p=='\r')){
+        *p=0;
+        strncpy((char *)folder, (char *)f,255);
+    }
+
+    p++;
+    if(*p){
+        strncpy((char *)args, (char *)p,255);
+        for(p=args;(*p) && (*p!='\n') && (*p!='\r');p++);
+        *p=0;
+    }
+
+    done:
+        dprintf(cli->s, "cmd:\t%s\n",cmd);
+        dprintf(cli->s, "folder:\t%s\n",folder);
+        dprintf(cli->s, "args:\t%s\n",args);
+
     return ;
 }
 
@@ -99,6 +182,13 @@ int main(int argc, char *argv[]){
     else{
         sport = argv[1];
     }
+
+    //tempCode
+    Callback x;
+    x=getcmd((int8*)"hello");
+    printf("%p\n",x);
+    return 0;
+    //tempCode end
     port = (int16)atoi(sport);
     scontinuation = true;
     s = initServer(port);
@@ -110,3 +200,5 @@ int main(int argc, char *argv[]){
     
     return 1;
 }
+
+#pragma GCC diagnostic pop

@@ -8,6 +8,55 @@ Tree root = {
     .n.path = "/"
 };
 
+void print_tree(int fd, Tree *_root){
+    int8 indentation;
+    int8 buf[256];
+    int16 size;
+    Node *n;
+    Leaf *l;
+
+    indentation = 0;
+    for(n = (Node *)_root;n;n=n->west){
+        Print(indent(indentation++));
+        Print(n->path);
+        Print("\n");
+        if(n->east){
+            for(l=n->east;l;l=l->east){
+                Print(indent(indentation));
+                Print(n->path);
+                Print("/");
+                Print(l->key);
+                Print("->'");
+                write(fd,(char *) l->value;(int)l->size);
+                Print("'\n");
+            }
+        }
+    }
+
+    return;
+    
+}
+
+int8 *indent(int16 n){
+    static int8 buf[256]; //static makes it accessible outside the function
+    int8 *p;
+    int16 i;
+
+    if(n < 1){
+        return (int8 *)"";
+    }
+    //128
+    assert(n<120);
+
+    zero(buf,256);
+
+    for(i=0,p=buf;i<n;i++,p+=2){
+        strncpy((char *)p, "  ",2);
+    }
+    return buf;
+}
+
+
 void zero(int8 *str, int16 size){
     int8 *p;
     int16 n;
@@ -80,6 +129,7 @@ int main(){
     int8 *key,*value;
     int16 size;
 
+
     n = create_node((Node *)&root,(int8 *) "/Users");
     assert(n);
     n2 = create_node(n, (int8 *) "/Users/login");
@@ -103,7 +153,14 @@ int main(){
     printf("Root: %p\n", (void *)&root);
     printf("Node 1: %p\n", (void *)n);
     printf("Node 2: %p\n", (void *)n2);
+
+
+    //temp code
+    
+    //endtempCode
     free(n2);
     free(n);
     return 0;
 }
+
+#pragma GCC diagnostic pop

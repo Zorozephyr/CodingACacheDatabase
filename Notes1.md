@@ -92,9 +92,9 @@ Special file containing instructions for the `make` build automation tool.
 
 **Example:**
 ```
-/Users
-    /Users/login/  
-        /Users/login/wait
+    /Users
+        /Users/login/  
+            /Users/login/wait
 ```
 Each node maintains complete path from root.
 
@@ -135,8 +135,17 @@ Custom function to set all bytes to 0. Needed because malloc'd memory contains r
 ### Arrow Operator `->`:
 Use when you have a POINTER to a struct: `ptr->member`. Shorthand for `(*ptr).member`. Use dot `.` when you have the actual struct, arrow `->` when you have a pointer.
 
+### Strings in C:
+A string is an array of `char` ending with `\0` (null terminator, value 0). Functions scan until `\0` to find the end. Without `\0`, functions read garbage! Example: `"Hi"` = `['H']['i']['\0']`
+
 ### strncpy (String N Copy):
 `strncpy(dest, src, max)` copies string safely with limit. Prevents buffer overflow by limiting characters copied. Always leave room for null terminator.
+
+### String Splitting Trick:
+Insert `\0` to split one string into two. Example: `"select /Users"` → set space to `\0` → `"select"` and `"/Users"` become separate strings. Use `*p = 0;` where p points to the space.
+
+### fork() - Clone Process:
+Creates identical copy of your program. Returns child's PID (positive) in parent, returns 0 in child. Use `if(pid)` for parent code, `else` for child code. Used in servers to handle multiple clients concurrently.
 
 ### When to use `&`:
 Regular variable (`root`) needs `&` to get address. Pointer variable (`n`, `n2`) already IS an address - use directly. `&n` gives where pointer lives, `n` gives what address it holds.

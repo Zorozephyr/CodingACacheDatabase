@@ -1,10 +1,16 @@
 flags =-Wall -O2 -std=c2x
 ldflags=
 
-all: clean cache
+all: clean tree cache
+
+tree: tree.o
+	cc ${flags} $^ -o $@ ${ldflags}
+
+tree.o: tree.c
+	cc ${flags} -c $^
 
 clean:
-	rm -f *.o cache
+	rm -f *.o cache tree
 
 cache: cache22.o
 	cc ${flags} $^ -o $@ ${ldflags}
