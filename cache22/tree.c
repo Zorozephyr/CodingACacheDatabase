@@ -13,7 +13,7 @@ void print_tree(int fd, Tree *_root){
     int8 buf[256];
     int16 size;
     Node *n;
-    Leaf *l;
+    Leaf *l,*last;
 
     indentation = 0;
     for(n = (Node *)_root;n;n=n->west){
@@ -21,14 +21,17 @@ void print_tree(int fd, Tree *_root){
         Print(n->path);
         Print("\n");
         if(n->east){
-            for(l=n->east;l;l=l->east){
-                Print(indent(indentation));
-                Print(n->path);
-                Print("/");
-                Print(l->key);
-                Print("->'");
-                write(fd,(char *) l->value;(int)l->size);
-                Print("'\n");
+            last = find_last(n);
+            if(last){
+                for(l=last;(Node *)l->west!=n;l=(Leaf *)l->west){
+                    Print(indent(indentation));
+                    Print(n->path);
+                    Print("/");
+                    Print(l->key);
+                    Print("->'");
+                    if(write(fd,(char *) l->value,(int)l->size)!=size);
+                    Print("'\n");
+                }
             }
         }
     }
@@ -89,7 +92,7 @@ Leaf *find_last_linear(Node *parent){
     errno = NoError;
     assert(parent);
 
-    if(!parent->east) reterr(NoError);
+    if(!parent->east) return (Leaf *)0;
     for(l=parent->east;l->east;l=l->east);
 
     assert(l);
@@ -156,7 +159,7 @@ int main(){
 
 
     //temp code
-    
+    print_tree(1,&root);
     //endtempCode
     free(n2);
     free(n);

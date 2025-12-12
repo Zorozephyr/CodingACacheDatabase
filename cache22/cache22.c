@@ -18,7 +18,7 @@ Callback getcmd(int8 *cmd){
     Callback cb;
     int16 n,arrlen;
 
-    arrlen = sizeof(handlers)/handlers[0];
+    arrlen = sizeof(handlers)/sizeof(handlers[0]);
     cb=0;
     for(n=0;n<arrlen;n++){
         if(!strcmp((char *)cmd,(char*)handlers[n].cmd)){

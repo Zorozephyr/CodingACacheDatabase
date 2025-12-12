@@ -23,10 +23,12 @@
 
 #define Print(x) \
         zero(buf,256); \
-        strncpy((char *)buf, (x),255); \
+        strncpy((char *)buf, (char*)(x),255); \
         size = (int16)strlen((char *)buf); \
         if(size!=0) \
-            write(fd, (char *)buf,size)
+            if(write(fd, (char *)buf,size)!=size){ \
+                perror("Write failed"); \
+            }
 
 typedef void* Nullptr;
 Nullptr null_ptr = 0;
