@@ -8,8 +8,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include<time.h>
-
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -31,6 +32,7 @@
 
 #define NoError 0
 #define ExampleFile "wl.txt"
+#define ExampleSearchFile "wl.50k.txt"
 
 #define Print(x) \
         zero(buf,256); \
@@ -93,4 +95,6 @@ void print_tree(int, Tree *);
     Tree * example_tree(void);
     int32 example_leaves(void);
     int8 *example_duplicate(int8*);
-int main(void);
+    int32 example_searches(int8*);
+int main(int,char**);
+//int main(void);

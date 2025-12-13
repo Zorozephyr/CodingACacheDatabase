@@ -250,18 +250,85 @@ int32 example_leaves(){
     return y;
 }
 
+int32 example_searches(int8 *file){
+    FILE *fd;
+    char buf[64];
+    int8 *path, *value;
+    int16 size;
+    int32 n;
+
+    fd = fopen((char *)file,"r");
+    assert(fd);
+    zero((int8 *)buf,64);
+    n=0;
+    while(fgets((char*)buf,63,fd)){
+        size = (int16)strlen((char *)buf);
+        assert(size>0);
+        size--;
+        buf[size]=0;
+
+        path = example_path(*buf);
+        value = lookup(path,(int8 *) buf);
+        if(value){
+            printf("%s -> '%s'\n",buf,value);
+        }
+        fflush(stdout);
+        zero((int8 *)buf,64);
+        n++;
+    }
+    fclose(fd);
+    return n;
+}
 
 
-int main(){
+
+int main(int argc, char *argv[]){
     Tree *example;
-    int32 x;
+    int32 x, y;
+    struct rusage usage;
+    float duration;
+    int8 *file;
+
+    if(argc < 2){
+        fprintf(stderr, "Usage %s INFILE\n", *argv);
+        return -1;
+    }
+    else{
+        file = (int8 *)argv[1];
+    }
 
     example = example_tree();
     printf("Populating Tree...");
     fflush(stdout);
     x = example_leaves();
     printf("Populating Tree Done...%d is No of leaves\n",x);
-    print_tree(1,example);
+
+    if(fork()){
+        wait(0);
+    }else{
+        example_searches(file);
+        exit(0);
+    }
+    //print_tree(1,example);
+
+    y = getrusage(RUSAGE_CHILDREN, &usage);
+    if(y)
+        perror("getrusage()");
+    else{
+
+        duration = usage.ru_utime.tv_sec + (usage.ru_utime.tv_usec/1000000.0);
+        printf("\nDuration: %.05f\n",duration);
+        printf("ret:\t %d\n",y);
+        printf("tv_sec\t %lu\n",usage.ru_utime.tv_sec);
+        printf("tv_usec\t %lu\n",usage.ru_utime.tv_usec);
+
+        duration = duration + usage.ru_stime.tv_sec + (usage.ru_stime.tv_usec/1000000.0);
+        printf("\nDuration: %.05f\n",duration);
+        printf("ret:\t %d\n",y);
+        printf("tv_sec\t %lu\n",usage.ru_stime.tv_sec);
+        printf("tv_usec\t %lu\n",usage.ru_stime.tv_usec);
+    }
+
 
     return 0;
 }
