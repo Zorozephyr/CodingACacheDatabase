@@ -12,13 +12,25 @@ root@VISHNUNA01:/mnt/c/ProjectsToPushToGit/C_Projects/CodingADatabase/cache22# s
 wc -l wl.50k.txt
 
 
-1k results:
-    Duration: 0.89750
-    ret:     0
-    tv_sec   0
-    tv_usec  897500
+BASELINE TIMES:
+    1k results:
+        Duration: 0.89750
+        ret:     0
+        tv_sec   0
+        tv_usec  897500
 
-    Duration: 1.04509
-    ret:     0
-    tv_sec   0
-    tv_usec  147588
+        Duration: 1.04509
+        ret:     0
+        tv_sec   0
+        tv_usec  147588
+
+    50K Results:
+        Duration: 21.47526
+        ret:     0
+        tv_sec   21
+        tv_usec  475261
+
+        Duration: 24.14916
+        ret:     0
+        tv_sec   2
+        tv_usec  673900
