@@ -23,7 +23,7 @@ void print_tree(int fd, Tree *_root){
         if(n->east){
             last = find_last(n);
             if(last){
-                for(l=last;(Node *)l->west!=n;l=(Leaf *)l->west){
+                for(l=last;(Node *)l!=n;l=(Leaf *)l->west){
                     Print(indent(indentation));
                     Print(n->path);
                     Print("/");
@@ -86,6 +86,42 @@ Node *create_node(Node *parent, int8 *path){
     return n;
 }
 
+Node *find_node_linear(int8 *path){
+    Node *p, *ret;
+
+    for(ret =(Node *)0,p = (Node *)&root;p;p=p->west){
+        if(!strcmp((char *)p->path,(char *)path)){
+            ret = p;
+            break;
+        }
+    }
+
+    return ret;
+}
+
+Leaf *find_leaf_linear(int8 *path, int8 * key){
+    Node *n;
+    Leaf *ret,*l;
+    n = find_node(path);
+    if(!n)
+        return (Leaf *)0;
+
+    for(ret=(Leaf *)0, l=n->east;l;l=l->east){
+        if(!strcmp((char *)l->key, (char *)key)){
+            ret = l;
+            break;
+        }
+    }
+
+    return ret;
+}
+
+int8 *lookup_linear(int8 *path, int8 *key){
+    Leaf *p;
+    p = find_leaf_linear(path,key);
+    return (p)?p->value:(int8 *)0;
+}
+
 Leaf *find_last_linear(Node *parent){
     Leaf *l;
 
@@ -105,6 +141,7 @@ Leaf * create_leaf(Node * parent, int8 *key, int8 *value, int16 count){
 
     assert(parent);
     l = find_last(parent);
+    
 
     size = sizeof(struct s_leaf);
 
@@ -125,44 +162,107 @@ Leaf * create_leaf(Node * parent, int8 *key, int8 *value, int16 count){
     return new;
 }
 
+Tree *example_tree(){
+    int8 c;
+    Node *n,*p;
+    int8 path[256];
+    int32 x;
+
+    zero(path,256);
+
+    p = (Node *)&root;
+
+    for(n = (Node *)&root, c= 'a';c<='z';c++){
+        x = (int32)strlen((char *)path);
+        *(path+ x++) = '/';
+        *(path + x) = c;
+        p=n;
+        n = create_node(p,path);
+    }
+
+    return (Tree *)&root;
+}
+
+int8 *example_path(int8 path){
+    static int8 buf[256];
+    zero(buf,256);
+    int8 c;
+    int32 x;
+
+    for(c='a';c<=path;c++){
+        x = (int32)strlen((char *)buf);
+        *(buf + x++) = '/';
+        *(buf + x) = c;
+    }
+    return buf;
+}
+
+int8 *example_duplicate(int8 *str){
+    char *s = (char *)str;
+    size_t len = strlen(s);
+    
+    int8 *new_buf = (int8 *)malloc((len * 2) + 1);
+    
+    if(!new_buf) return NULL; 
+
+    strcpy((char *)new_buf, s);
+    
+    strcat((char *)new_buf, s);
+
+    return new_buf;
+}
+int32 example_leaves(){
+    FILE *fp;
+    int32 y;
+    int8 buf[256];
+    Node *n;
+    int8 *path,*val;
+    size_t len;
+
+    fp = fopen(ExampleFile, "r");
+    assert(fp);
+
+    y = 0;
+    zero(buf,256);
+    while(fgets((char *)buf, 255, fp) != NULL){
+        len = strlen((char *)buf);
+        if (len > 0 && buf[len-1] == '\n') {
+            buf[len-1] = 0;
+            len--;
+        }
+        
+        // Skip empty lines
+        if(len == 0) continue;
+        path = example_path(*buf);
+        n = find_node(path);
+        if(!n){
+            zero(buf,256);
+            continue;
+        }
+        val = example_duplicate(buf);
+        create_leaf(n,buf,val,(int16)strlen((char *)val));
+        y++;
+        zero(buf, 256);
+    }
+
+    fclose(fp);
+
+    return y;
+}
+
+
 
 int main(){
-    Node * n, *n2;
-    Leaf *l1, *l2;
-    int8 *key,*value;
-    int16 size;
+    Tree *example;
+    int32 x;
 
+    example = example_tree();
+    printf("Populating Tree...");
+    fflush(stdout);
+    x = example_leaves();
+    printf("Populating Tree Done...%d is No of leaves\n",x);
+    print_tree(1,example);
 
-    n = create_node((Node *)&root,(int8 *) "/Users");
-    assert(n);
-    n2 = create_node(n, (int8 *) "/Users/login");
-    assert(n2);
-
-    key = (int8 *)"jonas";
-    value = (int8 *)"1234567890";
-    size = (int16)strlen((char *)value);
-
-    l1 = create_leaf(n2, key, value, size);
-    assert(l1);
-
-    key = (int8 *)"jonas1";
-    value = (int8 *)"12345678901";
-    size = (int16)strlen((char *)value);
-    l2 = create_leaf(n2, key, value, size);
-    assert(l2);
-
-    printf("Leaf 1: %p, value: %s\n", (void *)l1, (char *)l1->value);
-    printf("Leaf 2: %p, value: %s\n", (void *)l2, (char *)l2->value);
-    printf("Root: %p\n", (void *)&root);
-    printf("Node 1: %p\n", (void *)n);
-    printf("Node 2: %p\n", (void *)n2);
-
-
-    //temp code
-    print_tree(1,&root);
-    //endtempCode
-    free(n2);
-    free(n);
     return 0;
 }
 

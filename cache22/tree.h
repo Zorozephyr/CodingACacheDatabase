@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include<time.h>
 
 #include <assert.h>
 #include <errno.h>
@@ -16,10 +18,19 @@
 #define TagLeaf 4
 
 #define find_last(x) find_last_linear(x)
+
+#define find_leaf(x,y) find_leaf_linear(x,y)
+
+#define find_node(x) find_node_linear(x)
+
+#define lookup(x,y) lookup_linear(x,y)
+
 #define reterr(x) \
     errno = (x); \
     return null_ptr;
+
 #define NoError 0
+#define ExampleFile "wl.txt"
 
 #define Print(x) \
         zero(buf,256); \
@@ -71,8 +82,15 @@ north will point to itself if it is the root node.
 
 int8 *indent(int16);
 void zero(int8*, int16);
+Leaf *find_leaf_linear(int8 *, int8 *);
+Node *find_node_linear(int8 *);
+int8 *lookup_linear(int8 *, int8 *);
 Node *create_node(Node *, int8 *);
 Leaf *find_last_linear(Node *);
 Leaf *create_leaf(Node *, int8*, int8*, int16);
 void print_tree(int, Tree *);
+    int8 *example_path(int8);
+    Tree * example_tree(void);
+    int32 example_leaves(void);
+    int8 *example_duplicate(int8*);
 int main(void);
